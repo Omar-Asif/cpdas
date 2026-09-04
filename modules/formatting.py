@@ -14,7 +14,8 @@ def round_half_up(value, ndigits=0):
     """Round value to ndigits decimal places, rounding an exact .5 up
     instead of Python's default round-half-to-even."""
     quantum = Decimal("1").scaleb(-ndigits)
-    return float(Decimal(str(value)).quantize(quantum, rounding=ROUND_HALF_UP))
+    rounded = float(Decimal(str(value)).quantize(quantum, rounding=ROUND_HALF_UP))
+    return rounded + 0.0  # normalise -0.0 (e.g. from a tiny negative float) to 0.0
 
 
 def format_number(value, ndigits=1):

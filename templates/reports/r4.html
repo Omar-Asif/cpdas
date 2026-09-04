@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}R4 &middot; Daily COD Reconciliation{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+  <form method="get" action="{{ url_for('r4_report') }}">
+    <div class="form-row">
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" value="{{ report.date }}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Compute</button>
+      <button type="button" class="btn" onclick="window.print()">Print Report</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="report-header">
+    <div class="report-header__company">Dhrutogoti Courier</div>
+    <div class="report-header__title">Daily COD Reconciliation (BDT)</div>
+    <div class="report-header__period">{{ report.date | date_long }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rider</th>
+        <th>Name</th>
+        <th>Collected (C<sub>r</sub>)</th>
+        <th>Deposited (G<sub>r</sub>)</th>
+        <th>&Delta;<sub>r</sub></th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rider in report.riders %}
+      <tr>
+        <td>{{ rider.rider_id }}</td>
+        <td>{{ rider.name }}</td>
+        <td>{{ rider.collected | currency }}</td>
+        <td>{{ rider.deposited | currency }}</td>
+        <td>{{ rider.delta | currency }}</td>
+        <td>{{ rider.status }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="report-footer">
+    COD collected today: {{ report.totals.collected | currency }} &middot;
+    Deposited: {{ report.totals.deposited | currency }} &middot;
+    Shortage: {{ report.totals.shortage | currency }}
+    ({{ report.totals.riders_with_shortage }} rider{{ "s" if report.totals.riders_with_shortage != 1 else "" }})
+  </p>
+</div>
+{% endblock %}

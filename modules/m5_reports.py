@@ -8,7 +8,7 @@ Built up one report per build phase: R1 here in phase 3, R3/R4/R5 added in
 their own phases, R2 added last in phase 7 alongside scripts/verify.py.
 """
 
-from modules import m1_delivery, m2_rider
+from modules import m1_delivery, m2_rider, m3_cod
 
 
 def _zone_name_lookup(connection):
@@ -80,4 +80,31 @@ def get_r3_report(connection, month):
         "riders": rider_rows,
         "mean_productivity": mean_productivity,
         "coaching_threshold": coaching_threshold,
+    }
+
+
+def get_r4_report(connection, on_date):
+    """Assemble R4: Daily COD Reconciliation Report (Section 7.4 of the PDF).
+
+    Filters modules.m3_cod.get_all_cod_reconciliation down to riders with
+    C_r > 0, per BUILD_PROMPT.md's design constraint for this report --
+    everyone else was prepaid-only that day and has nothing to reconcile.
+    """
+    all_rows = m3_cod.get_all_cod_reconciliation(connection, on_date)
+    cod_rows = [row for row in all_rows if row["collected"] > 0]
+
+    total_collected = sum(row["collected"] for row in cod_rows)
+    total_deposited = sum(row["deposited"] for row in cod_rows)
+    total_shortage = sum(max(0.0, row["delta"]) for row in cod_rows)  # Eq. (9) numerator, for the day
+    riders_with_shortage = sum(1 for row in cod_rows if row["delta"] > 0)
+
+    return {
+        "date": on_date,
+        "riders": cod_rows,
+        "totals": {
+            "collected": total_collected,
+            "deposited": total_deposited,
+            "shortage": total_shortage,
+            "riders_with_shortage": riders_with_shortage,
+        },
     }

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}M3 &middot; COD Reconciliation{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+  <h1 class="card__title page-title">M3 &middot; COD Reconciliation Enquiry</h1>
+  <p class="text-muted page-intro">
+    Cash collected vs. deposited, and any shortage, for every rider on one date.
+  </p>
+
+  <form method="get" action="{{ url_for('m3_page') }}">
+    <div class="form-row">
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" value="{{ selected_date }}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Compute</button>
+      <button type="button" class="btn" onclick="window.print()">Print Report</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="report-header">
+    <div class="report-header__company">Dhrutogoti Courier</div>
+    <div class="report-header__title">COD Reconciliation Enquiry</div>
+    <div class="report-header__period">{{ selected_date | date_long }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rider</th>
+        <th>Name</th>
+        <th>Collected (C<sub>r</sub>)</th>
+        <th>Deposited (G<sub>r</sub>)</th>
+        <th>&Delta;<sub>r</sub></th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rider in riders %}
+      <tr>
+        <td><a href="{{ url_for('m3_page', date=selected_date, rider=rider.rider_id) }}">{{ rider.rider_id }}</a></td>
+        <td>{{ rider.name }}</td>
+        <td>{{ rider.collected | currency }}</td>
+        <td>{{ rider.deposited | currency }}</td>
+        <td>{{ rider.delta | currency }}</td>
+        <td>
+          {% if rider.status == "Reconciled" %}
+            <span class="badge badge-neutral">{{ rider.status }}</span>
+          {% elif rider.status.startswith("Shortage") %}
+            <span class="badge badge-danger">{{ rider.status }}</span>
+          {% else %}
+            <span class="badge badge-neutral">{{ rider.status }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if detail_rider_id %}
+<div class="card">
+  <h2 class="card__title">Monthly shortage rate &middot; {{ detail_rider_id }} &middot; {{ detail_month | month_long }}</h2>
+  <div class="card-grid">
+    <div class="metric">
+      <div class="metric__label">ShortageRate (Eq. 9)</div>
+      <div class="metric__value">{{ shortage_rate_pct | percent }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric__label">Escalation flag</div>
+      <div class="metric__value">
+        {% if escalation_flag %}
+          <span class="badge badge-danger">Yes &mdash; notify accounts manager</span>
+        {% else %}
+          <span class="badge badge-neutral">No</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card no-print">
+  <a class="btn" href="{{ url_for('r4_report', date=selected_date) }}">
+    View R4: Daily COD Reconciliation for {{ selected_date }} &rarr;
+  </a>
+</div>
+{% endblock %}

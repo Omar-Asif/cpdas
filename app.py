@@ -11,7 +11,7 @@ docs/SPEC_DECISIONS.md, decision D10.5.
 from flask import Flask, render_template, request
 
 from db import get_connection
-from modules import formatting, m1_delivery, m2_rider, m5_reports
+from modules import formatting, m1_delivery, m2_rider, m3_cod, m5_reports
 
 app = Flask(__name__)
 
@@ -114,11 +114,43 @@ def r3_report():
 
 @app.route("/m3")
 def m3_page():
+    """COD Reconciliation enquiry: all riders for a date, plus a per-rider
+    monthly ShortageRate_r drill-down (Eq. 9)."""
+    on_date = request.args.get("date", DEFAULT_DATE)
+    detail_rider_id = request.args.get("rider")
+    detail_month = request.args.get("month", on_date[:7])
+
+    connection = get_connection()
+    try:
+        rider_rows = m3_cod.get_all_cod_reconciliation(connection, on_date)
+        if detail_rider_id is None and rider_rows:
+            detail_rider_id = rider_rows[0]["rider_id"]
+        shortage_rate_pct, escalation_flag = (
+            m3_cod.get_monthly_shortage_rate(connection, detail_rider_id, detail_month)
+            if detail_rider_id else (0.0, False)
+        )
+    finally:
+        connection.close()
+
     return render_template(
-        "placeholder.html", module_id="M3", module_name="COD Reconciliation",
-        module_purpose="Cash collected, deposited and any shortage, per rider and per day.",
+        "forms/m3_enquiry.html", riders=rider_rows, selected_date=on_date, detail_rider_id=detail_rider_id,
+        detail_month=detail_month, shortage_rate_pct=shortage_rate_pct, escalation_flag=escalation_flag,
         active_module="m3",
     )
+
+
+@app.route("/reports/r4")
+def r4_report():
+    """R4: Daily COD Reconciliation Report (Section 7.4 of the PDF)."""
+    on_date = request.args.get("date", DEFAULT_DATE)
+
+    connection = get_connection()
+    try:
+        report = m5_reports.get_r4_report(connection, on_date)
+    finally:
+        connection.close()
+
+    return render_template("reports/r4.html", report=report, active_module="m5")
 
 
 @app.route("/m4")
