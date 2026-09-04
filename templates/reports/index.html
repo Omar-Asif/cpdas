@@ -25,9 +25,9 @@
     <div class="card__title">R4 &middot; Daily COD Reconciliation</div>
     <p class="text-muted card__subtitle">Collected vs. deposited and any shortage, per rider.</p>
   </a>
-  <div class="card">
-    <div class="card__title text-muted">R5 &middot; AI Zone Assignment Log</div>
-    <p class="text-muted card__subtitle">Not implemented yet.</p>
-  </div>
+  <a class="card card-link" href="{{ url_for('r5_report') }}">
+    <div class="card__title">R5 &middot; AI Zone Assignment Log</div>
+    <p class="text-muted card__subtitle">Parcels booked today, their assigned zone and match status.</p>
+  </a>
 </div>
 {% endblock %}

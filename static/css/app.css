@@ -206,6 +206,10 @@ a {
   max-width: 320px;
 }
 
+.form-row--wide {
+  max-width: none;
+}
+
 .form-row label {
   font-size: 13px;
   color: var(--text-muted);

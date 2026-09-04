@@ -165,6 +165,18 @@ def daterange(start, end):
 # distinct terms sharing exactly one term ("school") with PC-77012's address,
 # which is what makes the secondary 16% figure in that same worked example
 # reproduce exactly (1 / (sqrt(5) * sqrt(8)) = 0.1581 -> displays as 16%).
+#
+# Z-DHN's description also mentions "Shewrapara" -- a real Dhaka locality
+# that borders both Mirpur and Dhanmondi -- purely so that one term (not
+# part of PC-77012's own address) has document frequency 2 instead of 1
+# across the three zone descriptions. Without any shared vocabulary at all,
+# every term's TF-IDF weight (Section 6.2's optional upgrade) would be
+# identical, and TF-IDF cosine similarity would degenerate to being exactly
+# the same as binary cosine similarity -- silently contradicting
+# BUILD_PROMPT.md's own statement that "TF-IDF does not reproduce the
+# examined 80% figure". This one shared term is what makes the TF-IDF
+# upgrade a genuinely different (and, per that same statement, deliberately
+# non-default) computation.
 ZONES = [
     {
         "zone_id": "Z-MIR",
@@ -187,7 +199,7 @@ ZONES = [
         "hub": "Dhanmondi Hub",
         "description": (
             "Dhanmondi, Road 27, Satmasjid Road, Kalabagan, Rayerbazar, "
-            "near Dhanmondi Lake, Hatirpool"
+            "near Dhanmondi Lake, Hatirpool, Shewrapara"
         ),
     },
 ]
@@ -813,10 +825,14 @@ for _ in range(18):
 # ---------------------------------------------------------------------------
 
 _MULTI_ATTEMPT_DATE = date(2026, 6, 15)
+# Only the extra/solved riders are eligible here -- FIXED_RIDERS' delivered
+# and failed totals are pinned exactly to the Section 4.3 worked example, so
+# they must never pick up additional scans from outside generate_june_rider_data.
+_MULTI_ATTEMPT_ELIGIBLE_RIDER_IDS = [r["rider_id"] for r in EXTRA_RIDERS]
 for _ in range(6):
     _zone_id = random.choice([z["zone_id"] for z in ZONES])
     create_failed_parcel(
-        _zone_id, _MULTI_ATTEMPT_DATE, random.choice(RIDER_IDS),
+        _zone_id, _MULTI_ATTEMPT_DATE, random.choice(_MULTI_ATTEMPT_ELIGIBLE_RIDER_IDS),
         random.choice(FAILURE_REASON_POOL), extra_attempts=random.choice([1, 2]),
     )
 
@@ -967,18 +983,18 @@ for _rider in EXTRA_RIDERS:
 DEMO_ADDRESSES = [
     {"parcel_id": "PC-77012", "address": PC_77012_ADDRESS, "category": "clean_match", "expected_zone": "Z-MIR"},
     {"parcel_id": "PC-77013", "address": "Uttara, Sector 7, Rajlokkhi, Kuril, Azampur, Jasimuddin", "category": "clean_match", "expected_zone": "Z-UTT"},
-    {"parcel_id": "PC-77014", "address": "Dhanmondi, Satmasjid, Kalabagan, Rayerbazar", "category": "clean_match", "expected_zone": "Z-DHN"},
+    {"parcel_id": "PC-77014", "address": "Dhanmondi, Satmasjid, Kalabagan, Rayerbazar, Hatirpool", "category": "clean_match", "expected_zone": "Z-DHN"},
     {"parcel_id": "PC-77015", "address": "Mirpur, Kazipara, Shewrapara, Section, Pallobi", "category": "spelling_variant", "expected_zone": "Z-MIR"},
     {"parcel_id": "PC-77016", "address": "Uttara, Sector 7, Rajlokkhi, Kuril, Azampur, Jasimuddin, School, Uttarah", "category": "spelling_variant", "expected_zone": "Z-UTT"},
-    {"parcel_id": "PC-77017", "address": "Dhanmondi, Satmasjid, Kalabagan, Rayerbazar, Hatirpool, Lakes", "category": "spelling_variant", "expected_zone": "Z-DHN"},
+    {"parcel_id": "PC-77017", "address": "Dhanmondi, Satmasjid, Kalabagan, Rayerbazar, Hatirpool, Shewrapara, Lakes", "category": "spelling_variant", "expected_zone": "Z-DHN"},
     {"parcel_id": "PC-77018", "address": "Shewrapara, Section, Mirpur, Kazipara", "category": "clean_match", "expected_zone": "Z-MIR"},
     {"parcel_id": "PC-77019", "address": "Azampur, Uttara, Sector, Kuril, Rajlokkhi, Airport", "category": "landmark_only", "expected_zone": "Z-UTT"},
     {"parcel_id": "PC-77020", "address": "near college gate, Dhaka", "category": "below_threshold", "expected_zone": None},
-    {"parcel_id": "PC-77021", "address": "Rayerbazar, Hatirpool, Dhanmondi, Satmasjid", "category": "clean_match", "expected_zone": "Z-DHN"},
+    {"parcel_id": "PC-77021", "address": "Rayerbazar, Hatirpool, Dhanmondi, Satmasjid, Kalabagan", "category": "clean_match", "expected_zone": "Z-DHN"},
     {"parcel_id": "PC-77022", "address": "Kazipara, Mirpur, Shewrapara, Section", "category": "landmark_only", "expected_zone": "Z-MIR"},
     {"parcel_id": "PC-77023", "address": "Rajlokkhi, Kuril, Uttara, Sector, Azampur, Jasimuddin", "category": "clean_match", "expected_zone": "Z-UTT"},
     {"parcel_id": "PC-77024", "address": "some house near the big road, Dhaka", "category": "below_threshold", "expected_zone": None},
-    {"parcel_id": "PC-77025", "address": "Kalabagan, Dhanmondi, Satmasjid, Rayerbazar", "category": "clean_match", "expected_zone": "Z-DHN"},
+    {"parcel_id": "PC-77025", "address": "Kalabagan, Dhanmondi, Satmasjid, Rayerbazar, Hatirpool", "category": "clean_match", "expected_zone": "Z-DHN"},
     {"parcel_id": "PC-77026", "address": "Shewrapara, Mirpur, Section, Kazipara", "category": "clean_match", "expected_zone": "Z-MIR"},
     {"parcel_id": "PC-77027", "address": "Jasimuddin, Uttara, School, Sector, Kuril, Azampur", "category": "landmark_only", "expected_zone": "Z-UTT"},
 ]

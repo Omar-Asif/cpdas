@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}M4 &middot; AI Zone Matching{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+  <h1 class="card__title page-title">M4 &middot; Address Matching Form</h1>
+  <p class="text-muted page-intro">
+    Cosine-similarity matching of a parcel's free-text address against every zone description (Eq. 10).
+  </p>
+
+  <form method="get" action="{{ url_for('m4_page') }}">
+    <div class="form-row">
+      <label for="parcel">Parcel ID</label>
+      <input type="text" id="parcel" name="parcel" value="{{ parcel_id }}" list="unmatched-parcels">
+      <datalist id="unmatched-parcels">
+        {% for p in unmatched_parcels %}
+          <option value="{{ p.parcel_id }}">{{ p.delivery_address[:40] }}</option>
+        {% endfor %}
+      </datalist>
+    </div>
+    <div class="form-row">
+      <label>
+        <input type="checkbox" name="tfidf" value="1" {% if use_tfidf %}checked{% endif %}
+               onchange="this.form.submit()">
+        Use TF&ndash;IDF weighting (bonus-credit upgrade; binary is the default)
+      </label>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn">Load Parcel</button>
+    </div>
+  </form>
+</div>
+
+{% if not parcel %}
+<div class="card">
+  <p class="text-muted">No parcel found with ID "{{ parcel_id }}".</p>
+</div>
+{% else %}
+<div class="card">
+  <div class="report-header">
+    <div class="report-header__company">Dhrutogoti Courier</div>
+    <div class="report-header__title">Address Matching</div>
+    <div class="report-header__period">{{ parcel.parcel_id }}</div>
+  </div>
+
+  <div class="form-row form-row--wide">
+    <label>Address text (read-only)</label>
+    <input type="text" value="{{ parcel.delivery_address }}" readonly>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Zone</th><th>Similarity</th><th>Auto-assign eligible</th></tr>
+    </thead>
+    <tbody>
+      {% for entry in ranked_scores %}
+      <tr>
+        <td>{{ entry.zone_id }} &middot; {{ entry.zone_name }}</td>
+        <td>{{ entry.score | similarity_percent }}</td>
+        <td>{{ "Yes" if entry.meets_threshold else "No" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if ranked_scores %}
+  <p class="report-footer">
+    Output: Assigned zone
+    {% if preview_zone_id %}
+      {{ ranked_scores[0].zone_id }} &mdash; {{ ranked_scores[0].zone_name }} hub ({{ ranked_scores[0].score | similarity_percent }})
+    {% else %}
+      &mdash; (below threshold, or tied at threshold &mdash; manual sorting queue)
+    {% endif %}
+    <br>
+    Output: Second best
+    {% if ranked_scores | length > 1 %}
+      {{ ranked_scores[1].zone_id }} &mdash; {{ ranked_scores[1].zone_name }} ({{ ranked_scores[1].score | similarity_percent }})
+    {% endif %}
+  </p>
+  {% endif %}
+
+  <p class="report-footer">
+    Recorded status:
+    {% if current_assignment %}
+      {% if current_assignment.zone_id %}
+        {{ current_assignment.zone_id }} &middot; {{ current_assignment.zone_name }}
+        ({{ current_assignment.similarity_score | similarity_percent }}, {{ current_assignment.source }})
+      {% else %}
+        Manual sorting queue ({{ current_assignment.similarity_score | similarity_percent }}, {{ current_assignment.source }})
+      {% endif %}
+    {% else %}
+      Not yet matched
+    {% endif %}
+  </p>
+
+  <form method="post" action="{{ url_for('m4_run_matching') }}" class="no-print">
+    <input type="hidden" name="parcel_id" value="{{ parcel.parcel_id }}">
+    <input type="hidden" name="tfidf" value="{{ '1' if use_tfidf else '0' }}">
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Run AI Matching</button>
+    </div>
+  </form>
+</div>
+
+<div class="card no-print">
+  <h2 class="card__title">Dispatcher override</h2>
+  <p class="text-muted">Available &mdash; the dispatcher can reassign this parcel to any zone.</p>
+  <form method="post" action="{{ url_for('m4_override') }}">
+    <input type="hidden" name="parcel_id" value="{{ parcel.parcel_id }}">
+    <div class="form-row">
+      <label for="zone_id">Zone</label>
+      <select id="zone_id" name="zone_id">
+        {% for zone in zones %}
+          <option value="{{ zone.zone_id }}">{{ zone.zone_id }} &middot; {{ zone.zone_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn">Override</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<div class="card no-print">
+  <h2 class="card__title">Batch assignment</h2>
+  <p class="text-muted">Run AI matching over every parcel that has never been matched (the manual-sorting queue's source).</p>
+  <form method="post" action="{{ url_for('m4_batch_matching') }}">
+    <input type="hidden" name="tfidf" value="{{ '1' if use_tfidf else '0' }}">
+    <div class="form-actions">
+      <button type="submit" class="btn">Batch-assign all unmatched parcels</button>
+    </div>
+  </form>
+</div>
+
+<div class="card no-print">
+  <a class="btn" href="{{ url_for('r5_report') }}">View R5: AI Zone Assignment Log &rarr;</a>
+</div>
+{% endblock %}

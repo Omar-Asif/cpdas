@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}R5 &middot; AI Zone Assignment Log{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+  <form method="get" action="{{ url_for('r5_report') }}">
+    <div class="form-row">
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" value="{{ report.date }}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Compute</button>
+      <button type="button" class="btn" onclick="window.print()">Print Report</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="report-header">
+    <div class="report-header__company">Dhrutogoti Courier</div>
+    <div class="report-header__title">AI Zone Assignment Log</div>
+    <div class="report-header__period">{{ report.date | date_long }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Parcel ID</th>
+        <th>Address (first words)</th>
+        <th>Assigned Zone</th>
+        <th>Similarity</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in report.entries %}
+      <tr>
+        <td>{{ entry.parcel_id }}</td>
+        <td>{{ entry.address_prefix }}&hellip;</td>
+        <td>{{ entry.zone_id ~ " " ~ entry.zone_name if entry.zone_id else "–" }}</td>
+        <td>{{ entry.similarity_score | similarity_percent if entry.similarity_score is not none else "–" }}</td>
+        <td>{{ entry.status }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="report-footer">
+    Parcels booked today: {{ report.booked_count }} &middot;
+    Auto-assigned: {{ report.auto_assigned_count }} &middot;
+    Manual queue: {{ report.manual_queue_count }} &middot;
+    Dispatcher overrides: {{ report.dispatcher_override_count }}
+  </p>
+</div>
+{% endblock %}

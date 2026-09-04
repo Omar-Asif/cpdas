@@ -8,7 +8,7 @@ Built up one report per build phase: R1 here in phase 3, R3/R4/R5 added in
 their own phases, R2 added last in phase 7 alongside scripts/verify.py.
 """
 
-from modules import m1_delivery, m2_rider, m3_cod
+from modules import m1_delivery, m2_rider, m3_cod, m4_matching
 
 
 def _zone_name_lookup(connection):
@@ -96,7 +96,11 @@ def get_r4_report(connection, on_date):
     total_collected = sum(row["collected"] for row in cod_rows)
     total_deposited = sum(row["deposited"] for row in cod_rows)
     total_shortage = sum(max(0.0, row["delta"]) for row in cod_rows)  # Eq. (9) numerator, for the day
-    riders_with_shortage = sum(1 for row in cod_rows if row["delta"] > 0)
+    # Use the status m3_cod already computed (which tolerates the same
+    # paisa-level float drift as the "Reconciled" label) rather than a raw
+    # delta > 0 check, so a rider whose delta is a rounding artefact isn't
+    # miscounted as having a real shortage.
+    riders_with_shortage = sum(1 for row in cod_rows if row["status"].startswith("Shortage"))
 
     return {
         "date": on_date,
@@ -108,3 +112,13 @@ def get_r4_report(connection, on_date):
             "riders_with_shortage": riders_with_shortage,
         },
     }
+
+
+def get_r5_report(connection, on_date):
+    """Assemble R5: AI Zone Assignment Log (Section 7.5 of the PDF).
+
+    Everything comes straight from m4_matching.get_zone_assignment_log --
+    per decision D8, R5's summary counts here are illustrative rather than
+    pinned to the PDF's exact sample figures.
+    """
+    return m4_matching.get_zone_assignment_log(connection, on_date)

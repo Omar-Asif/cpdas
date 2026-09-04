@@ -8,10 +8,10 @@ five input tables (parcels, scans, riders, zones, deposits) is a SELECT; see
 docs/SPEC_DECISIONS.md, decision D10.5.
 """
 
-from flask import Flask, render_template, request
+from flask import Flask, redirect, render_template, request, url_for
 
 from db import get_connection
-from modules import formatting, m1_delivery, m2_rider, m3_cod, m5_reports
+from modules import formatting, m1_delivery, m2_rider, m3_cod, m4_matching, m5_reports
 
 app = Flask(__name__)
 
@@ -155,11 +155,96 @@ def r4_report():
 
 @app.route("/m4")
 def m4_page():
+    """Address Matching Form (Section 6.4 of the PDF).
+
+    A GET here never writes anything: ranked_scores is a pure preview
+    computed fresh every load. Only the "Run AI Matching" and "Override"
+    actions below (both POST) ever INSERT into zone_assignments.
+    """
+    parcel_id = request.args.get("parcel", "PC-77012")
+    use_tfidf = request.args.get("tfidf") == "1"
+
+    connection = get_connection()
+    try:
+        parcel = connection.execute(
+            "SELECT parcel_id, delivery_address FROM parcels WHERE parcel_id = ?", (parcel_id,)
+        ).fetchone()
+        ranked_scores = (
+            m4_matching.score_parcel_against_zones(connection, parcel["delivery_address"], use_tfidf)
+            if parcel else []
+        )
+        preview_zone_id, _ = m4_matching.resolve_auto_assignment(ranked_scores)
+        current_assignment = m4_matching.get_current_assignment(connection, parcel_id) if parcel else None
+        zones = connection.execute("SELECT zone_id, zone_name FROM zones ORDER BY zone_id").fetchall()
+        unmatched_parcels = m4_matching.get_unmatched_parcels(connection)
+    finally:
+        connection.close()
+
     return render_template(
-        "placeholder.html", module_id="M4", module_name="AI Address-to-Zone Matching",
-        module_purpose="Cosine-similarity matching of free-text delivery addresses to delivery zones.",
-        active_module="m4",
+        "forms/m4_enquiry.html", parcel=parcel, parcel_id=parcel_id, use_tfidf=use_tfidf,
+        ranked_scores=ranked_scores, preview_zone_id=preview_zone_id, current_assignment=current_assignment,
+        zones=zones, unmatched_parcels=unmatched_parcels, active_module="m4",
     )
+
+
+@app.route("/m4/run", methods=["POST"])
+def m4_run_matching():
+    """Run AI Matching: score the parcel and INSERT one 'auto'
+    zone_assignments row (decision D2 -- append-only)."""
+    parcel_id = request.form["parcel_id"]
+    use_tfidf = request.form.get("tfidf") == "1"
+
+    connection = get_connection()
+    try:
+        m4_matching.record_auto_assignment(connection, parcel_id, use_tfidf)
+    finally:
+        connection.close()
+
+    return redirect(url_for("m4_page", parcel=parcel_id, tfidf="1" if use_tfidf else "0"))
+
+
+@app.route("/m4/override", methods=["POST"])
+def m4_override():
+    """Dispatcher override: INSERT a 'manual' zone_assignments row choosing
+    the dispatcher's zone, regardless of similarity score (Section 6.1)."""
+    parcel_id = request.form["parcel_id"]
+    chosen_zone_id = request.form["zone_id"]
+
+    connection = get_connection()
+    try:
+        m4_matching.record_manual_override(connection, parcel_id, chosen_zone_id)
+    finally:
+        connection.close()
+
+    return redirect(url_for("m4_page", parcel=parcel_id))
+
+
+@app.route("/m4/batch", methods=["POST"])
+def m4_batch_matching():
+    """Batch-assign every parcel with no zone_assignments row yet."""
+    use_tfidf = request.form.get("tfidf") == "1"
+
+    connection = get_connection()
+    try:
+        summary = m4_matching.run_batch_matching(connection, use_tfidf)
+    finally:
+        connection.close()
+
+    return render_template("forms/m4_batch_result.html", summary=summary, active_module="m4")
+
+
+@app.route("/reports/r5")
+def r5_report():
+    """R5: AI Zone Assignment Log (Section 7.5 of the PDF)."""
+    on_date = request.args.get("date", DEFAULT_DATE)
+
+    connection = get_connection()
+    try:
+        report = m5_reports.get_r5_report(connection, on_date)
+    finally:
+        connection.close()
+
+    return render_template("reports/r5.html", report=report, active_module="m5")
 
 
 @app.route("/m5")

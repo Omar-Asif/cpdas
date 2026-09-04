@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}M4 &middot; Batch Assignment{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1 class="card__title page-title">Batch Assignment Result</h1>
+  <div class="card-grid">
+    <div class="metric">
+      <div class="metric__label">Processed</div>
+      <div class="metric__value">{{ summary.processed }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric__label">Auto-assigned</div>
+      <div class="metric__value">{{ summary.auto_assigned }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric__label">Manual queue</div>
+      <div class="metric__value">{{ summary.manual_queue }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card no-print form-actions">
+  <a class="btn" href="{{ url_for('m4_page') }}">Back to Address Matching &rarr;</a>
+  <a class="btn" href="{{ url_for('r5_report') }}">View R5: AI Zone Assignment Log &rarr;</a>
+</div>
+{% endblock %}

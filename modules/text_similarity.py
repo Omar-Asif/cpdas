@@ -20,25 +20,28 @@ POSITIONAL_STOP_WORDS = {
 }
 
 
-def clean_terms(text):
-    """Clean free text into the distinct term set used by Eq. (10).
+def clean_term_list(text):
+    """Clean free text into a list of terms used by Eq. (10), keeping every
+    occurrence (not deduplicated). The binary matching mode only needs the
+    distinct set (see clean_terms below), but the optional TF-IDF upgrade
+    needs each term's frequency within the text, which a deduplicated set
+    cannot give.
 
     Tokenisation pipeline, applied in this exact order (see BUILD_PROMPT.md
     §6 for why the order matters -- reversed order would leave "opposite" or
-    bare numbers in the term set and break the §6.3 worked example):
+    bare numbers in the term list and break the §6.3 worked example):
 
     1. lowercase
     2. strip punctuation, split on whitespace
     3. drop pure numbers ("12", "3", "7")
     4. drop generic address words (house, road, flat, floor)
     5. drop positional stop-words (opposite, near, beside, ...)
-    6. deduplicate into a set
     """
     lowered = text.lower()
     stripped_of_punctuation = re.sub(r"[^\w\s]", " ", lowered)
     raw_tokens = stripped_of_punctuation.split()
 
-    terms = set()
+    terms = []
     for token in raw_tokens:
         if token.isdigit():
             continue
@@ -46,8 +49,17 @@ def clean_terms(text):
             continue
         if token in POSITIONAL_STOP_WORDS:
             continue
-        terms.add(token)
+        terms.append(token)
     return terms
+
+
+def clean_terms(text):
+    """Clean free text into the distinct term SET used by Eq. (10)'s binary
+    vectors -- see clean_term_list for the tokenisation pipeline itself.
+    Step 6 here is the deduplication binary matching needs that TF-IDF does
+    not: 'deduplicate clean_term_list's output into a set'.
+    """
+    return set(clean_term_list(text))
 
 
 def binary_cosine_similarity(terms_a, terms_b):
