@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}M1 &middot; Delivery Performance{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+  <h1 class="card__title page-title">M1 &middot; Zone Performance Enquiry Form</h1>
+  <p class="text-muted page-intro">
+    Delivery success rate, on-time percentage and average delivery time for one zone on one date.
+  </p>
+
+  <form method="get" action="{{ url_for('m1_page') }}">
+    <div class="form-row">
+      <label for="zone">Zone</label>
+      <select id="zone" name="zone">
+        {% for zone in zones %}
+          <option value="{{ zone.zone_id }}" {% if zone.zone_id == selected_zone %}selected{% endif %}>
+            {{ zone.zone_id }} &middot; {{ zone.zone_name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" value="{{ selected_date }}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Compute</button>
+      <button type="button" class="btn" onclick="window.print()">Print Report</button>
+    </div>
+  </form>
+</div>
+
+<div class="card" id="enquiry-results">
+  <div class="report-header">
+    <div class="report-header__company">Dhrutogoti Courier</div>
+    <div class="report-header__title">Zone Performance Enquiry</div>
+    <div class="report-header__period">
+      {{ result.zone_id }} &middot; {{ result.date | date_long }}
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="metric">
+      <div class="metric__label">Success rate</div>
+      <div class="metric__value">{{ result.success_pct | percent }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric__label">On-time rate</div>
+      <div class="metric__value">{{ result.on_time_pct | percent }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric__label">Average delivery time</div>
+      <div class="metric__value">{{ result.avg_delivery_hours | hours }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric__label">Operations review flag</div>
+      <div class="metric__value">
+        {% if result.operations_review_flag %}
+          <span class="badge badge-danger">Yes</span>
+        {% else %}
+          <span class="badge badge-neutral">No</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <p class="report-footer">
+    Avg. hub-out to delivery (secondary reading, see docs/SPEC_DECISIONS.md decision D1):
+    {{ result.avg_hub_out_to_delivery_hours | hours }}
+  </p>
+  <p class="report-footer">
+    Attempted {{ result.n_attempted }} &middot; Delivered {{ result.n_delivered }} &middot;
+    Failed {{ result.n_failed }} &middot; On-time {{ result.on_time_count }} of {{ result.n_delivered }}
+  </p>
+</div>
+
+<div class="card no-print">
+  <a class="btn" href="{{ url_for('r1_report', date=selected_date) }}">
+    View R1: Daily Delivery Report for {{ selected_date }} &rarr;
+  </a>
+</div>
+{% endblock %}

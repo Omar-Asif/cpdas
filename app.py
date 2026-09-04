@@ -8,9 +8,23 @@ five input tables (parcels, scans, riders, zones, deposits) is a SELECT; see
 docs/SPEC_DECISIONS.md, decision D10.5.
 """
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+
+from db import get_connection
+from modules import formatting, m1_delivery, m5_reports
 
 app = Flask(__name__)
+
+# Every report/form value is rounded only for display (decision D10); these
+# filters are how templates do that rounding, consistently, in one place.
+app.jinja_env.filters["percent"] = formatting.format_percent
+app.jinja_env.filters["hours"] = formatting.format_hours
+app.jinja_env.filters["similarity_percent"] = formatting.format_similarity_percent
+app.jinja_env.filters["currency"] = formatting.format_currency
+app.jinja_env.filters["date_long"] = formatting.format_date_long
+app.jinja_env.filters["month_long"] = formatting.format_month_long
+
+DEFAULT_DATE = "2026-07-08"  # the most recent date the seed data covers
 
 
 @app.route("/")
@@ -20,18 +34,40 @@ def index():
 
 
 # ---------------------------------------------------------------------------
-# Module placeholder routes. Each of these is replaced with real content in
-# its own build phase (see BUILD_PROMPT.md Section 11) -- M1 in phase 3, M2
-# in phase 4, M3 in phase 5, M4 in phase 6, M5 in phase 7.
+# M1 -- Delivery Performance Analytics
 # ---------------------------------------------------------------------------
 
 @app.route("/m1")
 def m1_page():
+    """Zone Performance Enquiry Form (Section 3.4 of the PDF)."""
+    zone_id = request.args.get("zone", "Z-MIR")
+    on_date = request.args.get("date", DEFAULT_DATE)
+
+    connection = get_connection()
+    try:
+        zones = connection.execute("SELECT zone_id, zone_name FROM zones ORDER BY zone_id").fetchall()
+        result = m1_delivery.get_zone_performance(connection, zone_id, on_date)
+    finally:
+        connection.close()
+
     return render_template(
-        "placeholder.html", module_id="M1", module_name="Delivery Performance Analytics",
-        module_purpose="Delivery success rate, on-time percentage and average delivery time per zone.",
-        active_module="m1",
+        "forms/m1_enquiry.html", zones=zones, selected_zone=zone_id, selected_date=on_date,
+        result=result, active_module="m1",
     )
+
+
+@app.route("/reports/r1")
+def r1_report():
+    """R1: Daily Delivery Report (Section 7.1 of the PDF)."""
+    on_date = request.args.get("date", DEFAULT_DATE)
+
+    connection = get_connection()
+    try:
+        report = m5_reports.get_r1_report(connection, on_date)
+    finally:
+        connection.close()
+
+    return render_template("reports/r1.html", report=report, active_module="m5")
 
 
 @app.route("/m2")
@@ -63,11 +99,7 @@ def m4_page():
 
 @app.route("/m5")
 def m5_page():
-    return render_template(
-        "placeholder.html", module_id="M5", module_name="Reporting",
-        module_purpose="Printable operations reports R1-R5.",
-        active_module="m5",
-    )
+    return render_template("reports/index.html", active_module="m5")
 
 
 if __name__ == "__main__":

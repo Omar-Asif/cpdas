@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}R1 &middot; Daily Delivery Report{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+  <form method="get" action="{{ url_for('r1_report') }}">
+    <div class="form-row">
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" value="{{ report.date }}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Compute</button>
+      <button type="button" class="btn" onclick="window.print()">Print Report</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="report-header">
+    <div class="report-header__company">Dhrutogoti Courier</div>
+    <div class="report-header__title">Daily Delivery Report</div>
+    <div class="report-header__period">Date: {{ report.date | date_long }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Zone</th>
+        <th>Attempted</th>
+        <th>Delivered</th>
+        <th>Failed</th>
+        <th>Success</th>
+        <th>On Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for zone in report.zones %}
+      <tr>
+        <td>{{ zone.zone_id }} {{ zone.zone_name }}</td>
+        <td>{{ zone.n_attempted }}</td>
+        <td>{{ zone.n_delivered }}</td>
+        <td>{{ zone.n_failed }}</td>
+        <td>{{ zone.success_pct | percent }}</td>
+        <td>{{ zone.on_time_pct | percent }}</td>
+      </tr>
+      {% endfor %}
+      <tr class="totals-row">
+        <td>Totals</td>
+        <td>{{ report.totals.n_attempted }}</td>
+        <td>{{ report.totals.n_delivered }}</td>
+        <td>{{ report.totals.n_failed }}</td>
+        <td>{{ report.totals.success_pct | percent }}</td>
+        <td>{{ report.totals.on_time_pct | percent }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="report-footer">
+    {% if report.top_failure_reason %}
+      Top failure reason today: {{ report.top_failure_reason }}
+      ({{ report.top_failure_reason_count }} of {{ report.top_failure_reason_total_failed }})
+    {% else %}
+      No failed deliveries recorded on this date.
+    {% endif %}
+  </p>
+</div>
+{% endblock %}

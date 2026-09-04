@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}M5 &middot; Reporting{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1 class="card__title page-title">M5 &middot; Reporting</h1>
+  <p class="text-muted page-intro">Printable A4 operations reports, assembled from M1&ndash;M4.</p>
+</div>
+
+<div class="card-grid">
+  <a class="card card-link" href="{{ url_for('r1_report') }}">
+    <div class="card__title">R1 &middot; Daily Delivery Report</div>
+    <p class="text-muted card__subtitle">Per-zone attempted/delivered/failed, success and on-time rates.</p>
+  </a>
+  <div class="card">
+    <div class="card__title text-muted">R2 &middot; Zone Performance Report</div>
+    <p class="text-muted card__subtitle">Not implemented yet.</p>
+  </div>
+  <div class="card">
+    <div class="card__title text-muted">R3 &middot; Rider Productivity Report</div>
+    <p class="text-muted card__subtitle">Not implemented yet.</p>
+  </div>
+  <div class="card">
+    <div class="card__title text-muted">R4 &middot; Daily COD Reconciliation</div>
+    <p class="text-muted card__subtitle">Not implemented yet.</p>
+  </div>
+  <div class="card">
+    <div class="card__title text-muted">R5 &middot; AI Zone Assignment Log</div>
+    <p class="text-muted card__subtitle">Not implemented yet.</p>
+  </div>
+</div>
+{% endblock %}
