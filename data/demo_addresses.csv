@@ -1,0 +1,17 @@
+parcel_id,address,category,expected_zone,computed_zone,computed_score
+PC-77012,"House 12, Road 3, Section 7, Pallabi, Mirpur, opposite Kazipara school",clean_match,Z-MIR,Z-MIR,0.8
+PC-77013,"Uttara, Sector 7, Rajlokkhi, Kuril, Azampur, Jasimuddin",clean_match,Z-UTT,Z-UTT,0.866
+PC-77014,"Dhanmondi, Satmasjid, Kalabagan, Rayerbazar",clean_match,Z-DHN,Z-DHN,0.8165
+PC-77015,"Mirpur, Kazipara, Shewrapara, Section, Pallobi",spelling_variant,Z-MIR,Z-MIR,0.8
+PC-77016,"Uttara, Sector 7, Rajlokkhi, Kuril, Azampur, Jasimuddin, School, Uttarah",spelling_variant,Z-UTT,Z-UTT,0.875
+PC-77017,"Dhanmondi, Satmasjid, Kalabagan, Rayerbazar, Hatirpool, Lakes",spelling_variant,Z-DHN,Z-DHN,0.8333
+PC-77018,"Shewrapara, Section, Mirpur, Kazipara",clean_match,Z-MIR,Z-MIR,0.8944
+PC-77019,"Azampur, Uttara, Sector, Kuril, Rajlokkhi, Airport",landmark_only,Z-UTT,Z-UTT,0.866
+PC-77020,"near college gate, Dhaka",below_threshold,,,0.0
+PC-77021,"Rayerbazar, Hatirpool, Dhanmondi, Satmasjid",clean_match,Z-DHN,Z-DHN,0.8165
+PC-77022,"Kazipara, Mirpur, Shewrapara, Section",landmark_only,Z-MIR,Z-MIR,0.8944
+PC-77023,"Rajlokkhi, Kuril, Uttara, Sector, Azampur, Jasimuddin",clean_match,Z-UTT,Z-UTT,0.866
+PC-77024,"some house near the big road, Dhaka",below_threshold,,,0.0
+PC-77025,"Kalabagan, Dhanmondi, Satmasjid, Rayerbazar",clean_match,Z-DHN,Z-DHN,0.8165
+PC-77026,"Shewrapara, Mirpur, Section, Kazipara",clean_match,Z-MIR,Z-MIR,0.8944
+PC-77027,"Jasimuddin, Uttara, School, Sector, Kuril, Azampur",landmark_only,Z-UTT,Z-UTT,0.866

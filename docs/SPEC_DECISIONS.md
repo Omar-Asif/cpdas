@@ -57,6 +57,20 @@ can reassign any parcel," and an append-only log gives a *better* audit trail th
 from `schema.sql`, even though §1 lists "assigned zone (blank until assigned)" as a parcel field —
 storing it there would force an UPDATE the first time a parcel got matched.
 
+**Addendum — why `scripts/seed.py` pre-populates `zone_assignments` for historical parcels.**
+`zone_assignments` is CPDAS's own computed output, not one of the five input datasets, but the
+offline seed step (decision D10.5) still writes `'auto'` rows for the great majority of generated
+parcels — every one that represents a *historical* delivery or failed attempt. The same "already
+recorded" framing D10.5 applies to the other four datasets applies here too: by the time the
+operations manager runs a report for a past or current date, that date's parcels have already been
+through dispatch in the normal course of business, exactly as their scans have already happened.
+Without this, M1/M2/M3 would have no zone data to group by until someone manually ran M4's batch
+matcher first, which would break the phase-by-phase build order (M1 in phase 3 has to work before
+M4 exists in phase 6). The one deliberate exception is the M4 demonstration set (`PC-77012` and the
+other addresses in `data/demo_addresses.csv`): those are left with no `zone_assignments` row at all,
+so they sit in a genuinely unmatched state for the M4 module's live "Run AI Matching" demonstration
+to process for real, rather than showing an already-decided result.
+
 ---
 
 ## D3 — Definition of "attempted"
