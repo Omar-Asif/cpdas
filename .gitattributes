@@ -1,0 +1,5 @@
+# Force binary handling regardless of any core.autocrlf setting on any
+# machine that clones this repo -- a PDF's internal byte structure (xref
+# tables, stream lengths) is not line-ending-safe, and Windows git's
+# text-detection heuristic can occasionally misclassify one as text.
+*.pdf binary
