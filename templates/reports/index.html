@@ -13,10 +13,10 @@
     <div class="card__title">R1 &middot; Daily Delivery Report</div>
     <p class="text-muted card__subtitle">Per-zone attempted/delivered/failed, success and on-time rates.</p>
   </a>
-  <div class="card">
-    <div class="card__title text-muted">R2 &middot; Zone Performance Report</div>
-    <p class="text-muted card__subtitle">Not implemented yet.</p>
-  </div>
+  <a class="card card-link" href="{{ url_for('r2_report') }}">
+    <div class="card__title">R2 &middot; Zone Performance Report</div>
+    <p class="text-muted card__subtitle">7-day window: avg. delivery time, success rate, volume, flag.</p>
+  </a>
   <a class="card card-link" href="{{ url_for('r3_report') }}">
     <div class="card__title">R3 &middot; Rider Productivity Report</div>
     <p class="text-muted card__subtitle">Per-rider delivered, duty days, productivity and fail rate.</p>

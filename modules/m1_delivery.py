@@ -163,6 +163,71 @@ def get_all_zone_performance(connection, on_date):
     return [get_zone_performance(connection, zone_id, on_date) for zone_id in ZONE_IDS]
 
 
+def _find_flag_streak_start(daily_success_pct):
+    """First 1-based day index (within the list) starting a run of 3
+    consecutive days below 85% success, or None if no such run exists.
+    A day with no attempted parcels (None in the list) cannot be part of a
+    streak, matching _operations_review_flag's same "no data = no flag"
+    rule for a single date.
+    """
+    for start_index in range(len(daily_success_pct) - OPERATIONS_REVIEW_CONSECUTIVE_DAYS + 1):
+        window = daily_success_pct[start_index:start_index + OPERATIONS_REVIEW_CONSECUTIVE_DAYS]
+        if all(pct is not None and pct < OPERATIONS_REVIEW_THRESHOLD_PCT for pct in window):
+            return start_index + 1
+    return None
+
+
+def get_weekly_zone_performance(connection, zone_id, end_date):
+    """R2 (Zone Performance Report): the 7-day window ending on end_date,
+    inclusive (decision D7). Success_z (Eq. 1) and T_bar_z (Eq. 4) are
+    aggregated over the whole window's totals, the same way R1's totals row
+    aggregates a single day's per-zone figures (decision D6) -- not an
+    average of each day's own percentage.
+    """
+    end = datetime.strptime(end_date, "%Y-%m-%d").date()
+    start = end - timedelta(days=6)
+    window_dates = [(start + timedelta(days=offset)).isoformat() for offset in range(7)]
+
+    total_attempted = 0
+    total_delivered = 0
+    total_delivery_time = 0.0
+    daily_success_pct = []
+
+    for day in window_dates:
+        outcomes = _resolve_daily_outcomes(connection, zone_id, day)
+        day_delivered = 0
+        day_attempted = len(outcomes)
+        day_delivery_time = 0.0
+        for info in outcomes.values():
+            if info["outcome"] == "delivered":
+                day_delivered += 1
+                day_delivery_time += info["delivery_hours"]
+
+        total_attempted += day_attempted
+        total_delivered += day_delivered
+        total_delivery_time += day_delivery_time
+        daily_success_pct.append((day_delivered / day_attempted * 100) if day_attempted else None)
+
+    success_pct = (total_delivered / total_attempted * 100) if total_attempted else 0.0    # Eq. (1)
+    avg_delivery_hours = (total_delivery_time / total_delivered) if total_delivered else 0.0  # Eq. (4)
+
+    return {
+        "zone_id": zone_id,
+        "start_date": start.isoformat(),
+        "end_date": end_date,
+        "iso_week": end.isocalendar()[1],
+        "volume": total_attempted,
+        "success_pct": success_pct,
+        "avg_delivery_hours": avg_delivery_hours,
+        "flag_day_index": _find_flag_streak_start(daily_success_pct),
+    }
+
+
+def get_all_weekly_zone_performance(connection, end_date):
+    """get_weekly_zone_performance for every zone -- used by R2."""
+    return [get_weekly_zone_performance(connection, zone_id, end_date) for zone_id in ZONE_IDS]
+
+
 def get_top_failure_reason(connection, on_date):
     """Most common failure_reason among distinct parcels that resolved to
     'failed' (decision D3) on on_date, city-wide across all zones -- used by

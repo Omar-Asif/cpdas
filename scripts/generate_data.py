@@ -412,7 +412,11 @@ def make_zone_flavoured_address(zone_id, drop_one_term=False):
     zone under Eq. (10). Occasionally drops one term for mild variety while
     staying safely above the 0.80 auto-assign threshold."""
     zone = next(z for z in ZONES if z["zone_id"] == zone_id)
-    core_terms = list(ZONE_TERMS[zone_id])
+    # sorted(), not list(): Python's hash randomisation makes set iteration
+    # order vary between process runs even with the RNG itself fixed, which
+    # would silently break the "always produces the same output" guarantee
+    # this generator is supposed to have.
+    core_terms = sorted(ZONE_TERMS[zone_id])
     if drop_one_term and len(core_terms) > 4:
         core_terms = core_terms[:-1]
     random.shuffle(core_terms)
@@ -864,7 +868,11 @@ def find_day08_delivered_parcels(exclude_ids, count):
         row["parcel_id"] for row in scans_rows
         if row["scan_type"] == "delivered" and row["scanned_at"].startswith(TODAY.isoformat())
     }
-    candidates = [pid for pid in delivered_on_day08 if pid not in exclude_ids]
+    # sorted(), not a plain list comprehension: delivered_on_day08 is a set,
+    # and Python's hash randomisation makes set iteration order vary between
+    # process runs even with the RNG itself fixed -- see the same note on
+    # make_zone_flavoured_address's core_terms above.
+    candidates = sorted(pid for pid in delivered_on_day08 if pid not in exclude_ids)
     random.shuffle(candidates)
     return candidates[:count]
 

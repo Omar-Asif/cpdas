@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}R2 &middot; Zone Performance Report{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+  <form method="get" action="{{ url_for('r2_report') }}">
+    <div class="form-row">
+      <label for="date">End date</label>
+      <input type="date" id="date" name="date" value="{{ report.end_date }}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Compute</button>
+      <button type="button" class="btn" onclick="window.print()">Print Report</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="report-header">
+    <div class="report-header__company">Dhrutogoti Courier</div>
+    <div class="report-header__title">Zone Performance Report</div>
+    <div class="report-header__period">
+      7-day period: {{ report.start_date | date_long }} &ndash; {{ report.end_date | date_long }}
+      (ISO week {{ report.iso_week }})
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Zone</th>
+        <th>Avg. Delivery Time (T&#772;<sub>z</sub>)</th>
+        <th>Success (7-day)</th>
+        <th>Volume</th>
+        <th>Flag</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for zone in report.zones %}
+      <tr>
+        <td>{{ zone.zone_id }} {{ zone.zone_name }}</td>
+        <td>{{ zone.avg_delivery_hours | hours }}</td>
+        <td>{{ zone.success_pct | percent }}</td>
+        <td>{{ zone.volume }}</td>
+        <td>
+          {% if zone.flag_day_index %}
+            <strong>Operations review (day {{ zone.flag_day_index }})</strong>
+          {% else %}
+            &ndash;
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="report-footer">
+    {% if report.recommendation %}
+      Recommendation printed: {{ report.recommendation }}
+    {% else %}
+      No operations-review recommendation this period.
+    {% endif %}
+  </p>
+</div>
+{% endblock %}

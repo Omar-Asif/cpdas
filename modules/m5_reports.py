@@ -16,6 +16,34 @@ def _zone_name_lookup(connection):
     return {row["zone_id"]: row["zone_name"] for row in rows}
 
 
+def get_r2_report(connection, end_date):
+    """Assemble R2: Zone Performance Report (Section 7.2 of the PDF).
+
+    Per decision D7, this is the 7-day window ending on end_date, inclusive
+    -- not a specific ISO week number, which the PDF's own "Week 27, 2026"
+    label contradicts against its own quoted dates. The recommendation line
+    names the first flagged zone, if any; the PDF only ever shows one.
+    """
+    zone_names = _zone_name_lookup(connection)
+    zone_rows = m1_delivery.get_all_weekly_zone_performance(connection, end_date)
+    for zone_row in zone_rows:
+        zone_row["zone_name"] = zone_names[zone_row["zone_id"]]
+
+    recommendation = None
+    for zone_row in zone_rows:
+        if zone_row["flag_day_index"] is not None:
+            recommendation = f"One additional rider for {zone_row['zone_name']}."
+            break
+
+    return {
+        "end_date": end_date,
+        "start_date": zone_rows[0]["start_date"] if zone_rows else end_date,
+        "iso_week": zone_rows[0]["iso_week"] if zone_rows else None,
+        "zones": zone_rows,
+        "recommendation": recommendation,
+    }
+
+
 def get_r1_report(connection, on_date):
     """Assemble R1: Daily Delivery Report (Section 7.1 of the PDF).
 

@@ -58,6 +58,21 @@ def m1_page():
     )
 
 
+@app.route("/reports/r2")
+def r2_report():
+    """R2: Zone Performance Report (Section 7.2 of the PDF) -- the 7-day
+    window ending on the given date, per decision D7."""
+    end_date = request.args.get("date", DEFAULT_DATE)
+
+    connection = get_connection()
+    try:
+        report = m5_reports.get_r2_report(connection, end_date)
+    finally:
+        connection.close()
+
+    return render_template("reports/r2.html", report=report, active_module="m5")
+
+
 @app.route("/reports/r1")
 def r1_report():
     """R1: Daily Delivery Report (Section 7.1 of the PDF)."""

@@ -259,7 +259,11 @@ existing upstream systems (booking counters, handheld scanner app, cash office) 
 database — exactly the situation §1 describes. It never runs while the app is serving requests,
 and `scripts/verify.py`'s CRUD audit (§10 of `BUILD_PROMPT.md`) explicitly excludes
 `scripts/seed.py` from its grep for `INSERT`/`UPDATE`/`DELETE`, for this same reason: that script
-is the data hand-off, not the analytics system.
+is the data hand-off, not the analytics system. `tests/test_formulas.py` is excluded from the same
+grep for an unrelated reason: its unit tests build their own throwaway in-memory SQLite database to
+test each formula function in isolation, and never touch `cpdas.db` — a second, independent
+exception to the "never write" rule, since test fixtures are not part of the running application
+either.
 
 The one deliberate exception is `zone_assignments`, which is CPDAS's own computed *output*, not
 one of the five business datasets — see D2. It is INSERT-only from within the running app itself,
