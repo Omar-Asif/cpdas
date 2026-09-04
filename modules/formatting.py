@@ -17,6 +17,12 @@ def round_half_up(value, ndigits=0):
     return float(Decimal(str(value)).quantize(quantum, rounding=ROUND_HALF_UP))
 
 
+def format_number(value, ndigits=1):
+    """A plain rounded number with no unit suffix (e.g. rider productivity,
+    pi_r/day) -- 1 decimal place by default."""
+    return f"{round_half_up(value, ndigits):.{ndigits}f}"
+
+
 def format_percent(value):
     """Percentages in M1, M2, M3 and reports R1-R4: 1 decimal place."""
     return f"{round_half_up(value, 1):.1f}%"

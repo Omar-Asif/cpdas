@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}R3 &middot; Rider Productivity Report{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+  <form method="get" action="{{ url_for('r3_report') }}">
+    <div class="form-row">
+      <label for="month">Month</label>
+      <input type="month" id="month" name="month" value="{{ report.month }}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Compute</button>
+      <button type="button" class="btn" onclick="window.print()">Print Report</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="report-header">
+    <div class="report-header__company">Dhrutogoti Courier</div>
+    <div class="report-header__title">Rider Productivity Report</div>
+    <div class="report-header__period">{{ report.month | month_long }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rider</th>
+        <th>Name</th>
+        <th>Delivered</th>
+        <th>Duty Days</th>
+        <th>&pi;<sub>r</sub>/day</th>
+        <th>FailRate</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rider in report.riders %}
+      <tr>
+        <td>{{ rider.rider_id }}</td>
+        <td>{{ rider.name }}</td>
+        <td>{{ rider.n_delivered }}</td>
+        <td>{{ rider.duty_days }}</td>
+        <td>{{ rider.pi_r | number }}</td>
+        <td>{{ rider.fail_rate_pct | percent }}</td>
+        <td>
+          {% if rider.note == "Coaching list" %}
+            <strong>{{ rider.note }}</strong>
+          {% else %}
+            {{ rider.note if rider.note else "–" }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="report-footer">
+    Company average &pi;&#772;: {{ report.mean_productivity | number }}/day &middot;
+    Coaching threshold: &pi;<sub>r</sub> &lt; {{ report.coaching_threshold | number }} or FailRate &gt; 15%
+  </p>
+</div>
+{% endblock %}

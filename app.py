@@ -11,12 +11,13 @@ docs/SPEC_DECISIONS.md, decision D10.5.
 from flask import Flask, render_template, request
 
 from db import get_connection
-from modules import formatting, m1_delivery, m5_reports
+from modules import formatting, m1_delivery, m2_rider, m5_reports
 
 app = Flask(__name__)
 
 # Every report/form value is rounded only for display (decision D10); these
 # filters are how templates do that rounding, consistently, in one place.
+app.jinja_env.filters["number"] = formatting.format_number
 app.jinja_env.filters["percent"] = formatting.format_percent
 app.jinja_env.filters["hours"] = formatting.format_hours
 app.jinja_env.filters["similarity_percent"] = formatting.format_similarity_percent
@@ -25,6 +26,7 @@ app.jinja_env.filters["date_long"] = formatting.format_date_long
 app.jinja_env.filters["month_long"] = formatting.format_month_long
 
 DEFAULT_DATE = "2026-07-08"  # the most recent date the seed data covers
+DEFAULT_MONTH = "2026-06"    # the month the M2 worked examples use
 
 
 @app.route("/")
@@ -72,11 +74,42 @@ def r1_report():
 
 @app.route("/m2")
 def m2_page():
+    """Rider productivity enquiry: all riders for a month, plus a
+    per-rider failure-reason breakdown (Section 4.2 of the PDF)."""
+    month = request.args.get("month", DEFAULT_MONTH)
+    detail_rider_id = request.args.get("rider")
+
+    connection = get_connection()
+    try:
+        rider_rows, mean_productivity, coaching_threshold = m2_rider.get_all_rider_productivity(connection, month)
+        if detail_rider_id is None and rider_rows:
+            detail_rider_id = rider_rows[0]["rider_id"]
+        reason_breakdown = (
+            m2_rider.get_failure_reason_breakdown(connection, detail_rider_id, month)
+            if detail_rider_id else []
+        )
+    finally:
+        connection.close()
+
     return render_template(
-        "placeholder.html", module_id="M2", module_name="Rider Productivity Analytics",
-        module_purpose="Parcels delivered per rider per duty day, and each rider's failed-attempt rate.",
-        active_module="m2",
+        "forms/m2_enquiry.html", riders=rider_rows, mean_productivity=mean_productivity,
+        coaching_threshold=coaching_threshold, selected_month=month, detail_rider_id=detail_rider_id,
+        reason_breakdown=reason_breakdown, active_module="m2",
     )
+
+
+@app.route("/reports/r3")
+def r3_report():
+    """R3: Rider Productivity Report (Section 7.3 of the PDF)."""
+    month = request.args.get("month", DEFAULT_MONTH)
+
+    connection = get_connection()
+    try:
+        report = m5_reports.get_r3_report(connection, month)
+    finally:
+        connection.close()
+
+    return render_template("reports/r3.html", report=report, active_module="m5")
 
 
 @app.route("/m3")

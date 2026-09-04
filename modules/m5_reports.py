@@ -8,7 +8,7 @@ Built up one report per build phase: R1 here in phase 3, R3/R4/R5 added in
 their own phases, R2 added last in phase 7 alongside scripts/verify.py.
 """
 
-from modules import m1_delivery
+from modules import m1_delivery, m2_rider
 
 
 def _zone_name_lookup(connection):
@@ -53,4 +53,31 @@ def get_r1_report(connection, on_date):
         "top_failure_reason": top_reason,
         "top_failure_reason_count": top_reason_count,
         "top_failure_reason_total_failed": top_reason_total_failed,
+    }
+
+
+def get_r3_report(connection, month):
+    """Assemble R3: Rider Productivity Report (Section 7.3 of the PDF).
+
+    Per-rider figures and the company average/threshold come straight from
+    m2_rider.get_all_rider_productivity. The only thing added here is the
+    "Note" text each row shows -- a purely presentational label derived
+    from the coaching_flag / above_average booleans that module already
+    computed, not a new calculation.
+    """
+    rider_rows, mean_productivity, coaching_threshold = m2_rider.get_all_rider_productivity(connection, month)
+
+    for row in rider_rows:
+        if row["coaching_flag"]:
+            row["note"] = "Coaching list"
+        elif row["above_average"]:
+            row["note"] = "Above average"
+        else:
+            row["note"] = ""
+
+    return {
+        "month": month,
+        "riders": rider_rows,
+        "mean_productivity": mean_productivity,
+        "coaching_threshold": coaching_threshold,
     }
