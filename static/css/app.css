@@ -1,0 +1,345 @@
+/*
+ * CPDAS application styles.
+ *
+ * Flat surfaces, hairline borders, no gradients, no drop shadows, rounded
+ * 12px cards, generous whitespace. Every colour here is a var(--...) token
+ * from theme.css -- no colour literal appears in this file.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Layout: sidebar + topbar + content                                     */
+/* ---------------------------------------------------------------------- */
+
+.sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
+}
+
+.sidebar__brand {
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 12px 20px 12px;
+  color: var(--text);
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.nav-link:hover {
+  background: var(--surface-hover);
+}
+
+.nav-link.active {
+  background: var(--surface-hover);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.nav-link__module-id {
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-right: 6px;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  height: 56px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--bg);
+}
+
+.topbar__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--surface-hover);
+}
+
+.content {
+  padding: 28px 32px;
+  max-width: 1100px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Cards                                                                  */
+/* ---------------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.card__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card__subtitle {
+  margin: 0;
+  font-size: 13px;
+}
+
+.page-intro {
+  max-width: 640px;
+}
+
+.page-title {
+  font-size: 18px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                */
+/* ---------------------------------------------------------------------- */
+
+.btn {
+  display: inline-block;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 9px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: var(--surface-hover);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Forms                                                                  */
+/* ---------------------------------------------------------------------- */
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  max-width: 320px;
+}
+
+.form-row label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.form-row select,
+.form-row input[type="date"],
+.form-row input[type="month"],
+.form-row input[type="text"] {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.form-row input[readonly] {
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Tables (also used by printed reports)                                  */
+/* ---------------------------------------------------------------------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead {
+  display: table-header-group;
+}
+
+th, td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+tr.totals-row td {
+  font-weight: 600;
+  border-top: 2px solid var(--border);
+  border-bottom: none;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Output / metric display                                                */
+/* ---------------------------------------------------------------------- */
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric__label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.metric__value {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Badges (flags, statuses)                                               */
+/* ---------------------------------------------------------------------- */
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+.badge-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger-bg);
+}
+
+.badge-neutral {
+  color: var(--text-muted);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.report-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.report-header__company {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.report-header__title {
+  font-size: 15px;
+  margin-top: 2px;
+}
+
+.report-header__period {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.report-footer {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}

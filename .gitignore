@@ -2,3 +2,4 @@
 __pycache__/
 *.pyc
 cpdas.db
+.claude/settings.local.json

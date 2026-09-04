@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1 class="card__title page-title">Courier and Parcel Delivery Analytics System</h1>
+  <p class="text-muted page-intro">
+    A read-only analytics and reporting system for Dhrutogoti Courier's operations
+    manager. CPDAS analyses parcel, scan, rider, zone and deposit records that are
+    already captured elsewhere &mdash; it never adds, updates or deletes them.
+    Choose a module from the sidebar to get started.
+  </p>
+</div>
+
+<div class="card-grid">
+  <a class="card card-link" href="{{ url_for('m1_page') }}">
+    <div class="card__title">M1 &middot; Delivery Performance</div>
+    <p class="text-muted card__subtitle">Success rate, on-time %, average delivery time per zone.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('m2_page') }}">
+    <div class="card__title">M2 &middot; Rider Productivity</div>
+    <p class="text-muted card__subtitle">Parcels per duty day and failed-attempt rate, per rider.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('m3_page') }}">
+    <div class="card__title">M3 &middot; COD Reconciliation</div>
+    <p class="text-muted card__subtitle">Cash collected vs. deposited per rider, per day.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('m4_page') }}">
+    <div class="card__title">M4 &middot; AI Zone Matching</div>
+    <p class="text-muted card__subtitle">Cosine-similarity address-to-zone matching and dispatcher overrides.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('m5_page') }}">
+    <div class="card__title">M5 &middot; Reporting</div>
+    <p class="text-muted card__subtitle">Printable A4 reports R1&ndash;R5.</p>
+  </a>
+</div>
+{% endblock %}

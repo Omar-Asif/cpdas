@@ -1,0 +1,39 @@
+/*
+ * CPDAS theme tokens.
+ *
+ * Every colour used anywhere in this application is defined here, as a CSS
+ * custom property, and nowhere else. base.html is the only place these two
+ * blocks are read from -- changing the whole application's colour scheme is
+ * a one-line edit to a single value below. This is deliberate: it is the
+ * designated "make a live change" surface for the project viva.
+ */
+
+:root[data-theme="dark"] {
+  --bg: #1f1e1c;
+  --surface: #2a2926;
+  --surface-hover: #333230;
+  --border: #3d3b37;
+  --text: #ece8e1;
+  --text-muted: #a39d92;
+  --accent: #d97757;
+  --accent-hover: #c86a4c;
+  --accent-text: #1f1e1c;
+  --danger: #e0796a;
+  --danger-bg: #3a2622;
+  --success: #82c08a;
+}
+
+:root[data-theme="light"] {
+  --bg: #faf9f5;
+  --surface: #ffffff;
+  --surface-hover: #f3f1ea;
+  --border: #e5e1d8;
+  --text: #2b2a28;
+  --text-muted: #77726a;
+  --accent: #c1602f;
+  --accent-hover: #a85025;
+  --accent-text: #ffffff;
+  --danger: #c1432f;
+  --danger-bg: #fbeae6;
+  --success: #3f8f4f;
+}

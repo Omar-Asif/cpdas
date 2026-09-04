@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dhrutogoti Courier{% endblock %} &mdash; CPDAS</title>
+
+  <!--
+    Set the theme attribute before first paint, so the page never flashes
+    the wrong theme while style.css and theme.js are still loading.
+  -->
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem("cpdas-theme");
+      var theme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : "light";
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% include "partials/sidebar.html" %}
+  <div class="main">
+    {% include "partials/topbar.html" %}
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

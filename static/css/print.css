@@ -1,0 +1,89 @@
+/*
+ * CPDAS print stylesheet -- used for R1-R5 reports on A4 paper.
+ *
+ * Browser support for the @page margin-box page-number rule below varies
+ * (see README.md); the print dialog's own header/footer option is the
+ * reliable fallback for a page number on every printed sheet.
+ */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+    }
+  }
+
+  .sidebar,
+  .topbar,
+  .btn,
+  .form-actions,
+  .no-print {
+    display: none !important;
+  }
+
+  .main {
+    display: block !important;
+  }
+
+  .content {
+    padding: 0;
+    max-width: none;
+  }
+
+  /* Force light colours regardless of the active on-screen theme. */
+  html, body {
+    background: #ffffff !important;
+    color: #2b2a28 !important;
+  }
+
+  .card {
+    background: #ffffff !important;
+    border-color: #d8d3c8 !important;
+  }
+
+  table {
+    color: #2b2a28 !important;
+  }
+
+  th, td {
+    border-color: #d8d3c8 !important;
+  }
+
+  th {
+    color: #55504a !important;
+  }
+
+  .text-muted,
+  .report-header__period,
+  .report-footer {
+    color: #55504a !important;
+  }
+
+  .badge-danger {
+    background: #f5e2dd !important;
+    color: #8a3323 !important;
+    border-color: #f5e2dd !important;
+  }
+
+  /* Keep a table row from splitting across a page break, and repeat the
+     header row on every page the table spans. */
+  table {
+    border-collapse: collapse;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

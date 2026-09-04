@@ -1,0 +1,20 @@
+<nav class="sidebar">
+  <div class="sidebar__brand">Dhrutogoti Courier</div>
+  <div class="sidebar__nav">
+    <a class="nav-link {{ 'active' if active_module == 'm1' }}" href="{{ url_for('m1_page') }}">
+      <span class="nav-link__module-id">M1</span>Delivery Performance
+    </a>
+    <a class="nav-link {{ 'active' if active_module == 'm2' }}" href="{{ url_for('m2_page') }}">
+      <span class="nav-link__module-id">M2</span>Rider Productivity
+    </a>
+    <a class="nav-link {{ 'active' if active_module == 'm3' }}" href="{{ url_for('m3_page') }}">
+      <span class="nav-link__module-id">M3</span>COD Reconciliation
+    </a>
+    <a class="nav-link {{ 'active' if active_module == 'm4' }}" href="{{ url_for('m4_page') }}">
+      <span class="nav-link__module-id">M4</span>AI Zone Matching
+    </a>
+    <a class="nav-link {{ 'active' if active_module == 'm5' }}" href="{{ url_for('m5_page') }}">
+      <span class="nav-link__module-id">M5</span>Reporting
+    </a>
+  </div>
+</nav>
